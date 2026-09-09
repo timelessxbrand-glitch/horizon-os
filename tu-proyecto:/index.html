@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Horizon OS - Sistema Operativo Estratégico</title>
+
+  <!-- Configuración PWA / Web App -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Horizon OS" />
+  <meta name="theme-color" content="#0b0f17" />
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
@@ -30,31 +38,34 @@
   <div id="root" class="flex-1 flex flex-col"></div>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
     function App() {
+      // Cargar datos guardados del almacenamiento local si existen
+      const savedState = JSON.parse(localStorage.getItem('horizon_os_data') || '{}');
+
       // Estado de Onboarding y Formulario Secuencial
-      const [onboardingComplete, setOnboardingComplete] = useState(false);
+      const [onboardingComplete, setOnboardingComplete] = useState(savedState.onboardingComplete || false);
       const [currentStep, setCurrentStep] = useState(1);
 
       // Datos del Formulario
-      const [formData, setFormData] = useState({
-        stage: 'crear', // 'crear' o 'escalar'
-        niche: 'ropa', // 'ropa', 'app', 'servicios', 'ecommerce', 'otro'
-        customNiche: '', // Si elige 'otro'
-        timeCommitment: '2h', // '2h', '4h', '8h'
+      const [formData, setFormData] = useState(savedState.formData || {
+        stage: 'crear',
+        niche: 'ropa',
+        customNiche: '',
+        timeCommitment: '2h',
         brandName: '',
         goalTarget: ''
       });
 
       // Plan Dinámico Generado y Progreso
-      const [planDays, setPlanDays] = useState([]);
-      const [currentDayIndex, setCurrentDayIndex] = useState(0);
-      const [unlockedDayIndex, setUnlockedDayIndex] = useState(0); // Control de candados
-      const [completedTasks, setCompletedTasks] = useState({}); // { "dayIndex-taskIndex": true }
+      const [planDays, setPlanDays] = useState(savedState.planDays || []);
+      const [currentDayIndex, setCurrentDayIndex] = useState(savedState.currentDayIndex || 0);
+      const [unlockedDayIndex, setUnlockedDayIndex] = useState(savedState.unlockedDayIndex || 0);
+      const [completedTasks, setCompletedTasks] = useState(savedState.completedTasks || {});
 
       // Vista de Calendario vs Lista
-      const [viewMode, setViewMode] = useState('list'); // 'list' o 'grid'
+      const [viewMode, setViewMode] = useState('list');
 
       // Asesor Copiloto State
       const [aiQuery, setAiQuery] = useState('');
@@ -62,9 +73,23 @@
       const [aiLoading, setAiLoading] = useState(false);
 
       // Copiloto General Chat
-      const [activeTab, setActiveTab] = useState('roadmap'); // 'roadmap' o 'copilot'
-      const [generalMessages, setGeneralMessages] = useState([]);
+      const [activeTab, setActiveTab] = useState('roadmap');
+      const [generalMessages, setGeneralMessages] = useState(savedState.generalMessages || []);
       const [generalInput, setGeneralInput] = useState('');
+
+      // GUARDADO AUTOMÁTICO CADA VEZ QUE CAMBIA CUALQUIER DATO
+      useEffect(() => {
+        const dataToSave = {
+          onboardingComplete,
+          formData,
+          planDays,
+          currentDayIndex,
+          unlockedDayIndex,
+          completedTasks,
+          generalMessages
+        };
+        localStorage.setItem('horizon_os_data', JSON.stringify(dataToSave));
+      }, [onboardingComplete, formData, planDays, currentDayIndex, unlockedDayIndex, completedTasks, generalMessages]);
 
       // Generación Ultra-Específica y Granular según Tiempo Diario
       const generateCustomStrategy = (data) => {
@@ -103,7 +128,6 @@
               { title: "Beta Testing & Corrección de Bugs", tasks: ["Enviar acceso privado a los primeros 10 beta testers.", "Recopilar feedback directo y solucionar errores críticos."] }
             ];
           } else {
-            // Nicho Personalizado o Servicios
             baseAtomicTasks = [
               { title: `Análisis del Modelo (${nicheText})`, tasks: ["Definir la propuesta de valor única para este modelo específico.", "Establecer la estructura de costes y precios sugeridos."] },
               { title: "Avatar de Cliente Ideal", tasks: ["Identificar los 3 principales dolores del cliente objetivo.", "Definir los canales de comunicación donde se encuentra este cliente."] },
@@ -114,7 +138,6 @@
             ];
           }
         } else {
-          // Fase ESCALAR
           baseAtomicTasks = [
             { title: "Auditoría de Métricas de Conversión", tasks: ["Revisar la tasa de conversión actual de la web/embudo.", "Identificar el punto de fuga con mayor pérdida de usuarios."] },
             { title: "Optimización de la Oferta y Pricing", tasks: ["Ajustar precios o paquetes de mayor ticket.", "Añadir elementos de urgencia y prueba social comprobada."] },
@@ -124,32 +147,15 @@
           ];
         }
 
-        // Si el usuario tiene 1-2 horas al día, expandimos el plan para que cada día tenga máximo 2 tareas cortas
         let days = [];
         let dayCounter = 1;
 
         baseAtomicTasks.forEach((item) => {
-          if (is2h) {
-            // Para 2h dividimos cada bloque en días súper específicos
-            days.push({
-              day: dayCounter++,
-              title: item.title,
-              tasks: item.tasks
-            });
-          } else if (is4h) {
-            days.push({
-              day: dayCounter++,
-              title: item.title,
-              tasks: item.tasks
-            });
-          } else {
-            // 8h: Se agrupan más tareas por jornada
-            days.push({
-              day: dayCounter++,
-              title: item.title,
-              tasks: item.tasks
-            });
-          }
+          days.push({
+            day: dayCounter++,
+            title: item.title,
+            tasks: item.tasks
+          });
         });
 
         return days;
@@ -162,6 +168,20 @@
           const generatedPlan = generateCustomStrategy(formData);
           setPlanDays(generatedPlan);
           setOnboardingComplete(true);
+        }
+      };
+
+      // Reiniciar proyecto / Empezar de nuevo
+      const handleResetProject = () => {
+        if (confirm("¿Seguro que quieres reiniciar el proyecto? Se borrará el progreso actual.")) {
+          localStorage.removeItem('horizon_os_data');
+          setOnboardingComplete(false);
+          setCurrentStep(1);
+          setPlanDays([]);
+          setCurrentDayIndex(0);
+          setUnlockedDayIndex(0);
+          setCompletedTasks({});
+          setGeneralMessages([]);
         }
       };
 
@@ -256,7 +276,6 @@ Pregunta: ${userMsg}`;
         }
       };
 
-      // Porcentaje de Progreso Proporcional Real
       const progressPercentage = planDays.length > 0 
         ? Math.round((unlockedDayIndex / planDays.length) * 100)
         : 0;
@@ -276,19 +295,28 @@ Pregunta: ${userMsg}`;
             </div>
 
             {onboardingComplete && (
-              <div class="flex items-center space-x-2 bg-slate-900 border border-slate-800 p-1.5 rounded-xl text-xs">
+              <div class="flex items-center space-x-3">
                 <button
-                  onClick={() => setActiveTab('roadmap')}
-                  class={`px-3 py-1.5 rounded-lg font-medium transition ${activeTab === 'roadmap' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                  onClick={handleResetProject}
+                  class="text-xs text-slate-500 hover:text-red-400 transition"
+                  title="Reiniciar Proyecto"
                 >
-                  Hoja de Ruta ({planDays.length} Días)
+                  ⚙️ Reiniciar
                 </button>
-                <button
-                  onClick={() => setActiveTab('copilot')}
-                  class={`px-3 py-1.5 rounded-lg font-medium transition ${activeTab === 'copilot' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                >
-                  Copiloto General
-                </button>
+                <div class="flex items-center space-x-2 bg-slate-900 border border-slate-800 p-1.5 rounded-xl text-xs">
+                  <button
+                    onClick={() => setActiveTab('roadmap')}
+                    class={`px-3 py-1.5 rounded-lg font-medium transition ${activeTab === 'roadmap' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Hoja de Ruta ({planDays.length} Días)
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('copilot')}
+                    class={`px-3 py-1.5 rounded-lg font-medium transition ${activeTab === 'copilot' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Copiloto General
+                  </button>
+                </div>
               </div>
             )}
           </header>
@@ -400,7 +428,6 @@ Pregunta: ${userMsg}`;
                       ))}
                     </div>
 
-                    {/* Campo adicional si selecciona "Otro" */}
                     {formData.niche === 'otro' && (
                       <div class="pt-2">
                         <label class="block text-xs font-semibold text-emerald-400 mb-1.5 uppercase tracking-wider">Escribe tu modelo de negocio exacto:</label>
@@ -518,7 +545,6 @@ Pregunta: ${userMsg}`;
                     </div>
                   </div>
 
-                  {/* Selector Vista Lista vs Vista Calendario Grid */}
                   <div class="flex items-center space-x-1 bg-slate-900 border border-slate-800 p-1 rounded-lg">
                     <button
                       onClick={() => setViewMode('list')}
@@ -537,7 +563,7 @@ Pregunta: ${userMsg}`;
                   </div>
                 </div>
 
-                {/* VISTA LISTA VERTICAL CON CANDADOS Y DIFUMINADO */}
+                {/* VISTA LISTA VERTICAL */}
                 {viewMode === 'list' && (
                   <div class="space-y-2 max-h-[520px] overflow-y-auto pr-1">
                     {planDays.map((dayData, idx) => {
@@ -630,7 +656,6 @@ Pregunta: ${userMsg}`;
                         </h2>
                       </div>
 
-                      {/* Botón de Completar Día y Avanzar */}
                       {currentDayIndex < planDays.length - 1 && (
                         <button
                           onClick={handleCompleteDayAndAdvance}
@@ -646,7 +671,7 @@ Pregunta: ${userMsg}`;
                       )}
                     </div>
 
-                    {/* Lista de Tareas con Checkbox de Estado */}
+                    {/* Lista de Tareas con Checkbox */}
                     <div class="space-y-4">
                       {planDays[currentDayIndex].tasks.map((taskDesc, taskIdx) => {
                         const isChecked = !!completedTasks[`${currentDayIndex}-${taskIdx}`];
