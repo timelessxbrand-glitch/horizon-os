@@ -3,293 +3,647 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Horizon OS</title>
+  <title>Horizon OS - Sistema Operativo Estratégico</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- React & ReactDOM CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel CDN for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    :root {
-      --bg: #09090b;
-      --card: #141417;
-      --border: #27272a;
-      --accent: #10b981; /* Verde Horizon */
-      --accent-glow: rgba(16, 185, 129, 0.2);
-      --text: #f4f4f5;
-      --muted: #a1a1aa;
+    body {
+      background-color: #0b0f17;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-
-    /* Top Progress Bar Header */
-    header { background: #0c0c0e; border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; position: sticky; top: 0; z-index: 100; }
-    .header-content { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; }
-    .header-top { display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-weight: 800; letter-spacing: 2px; color: var(--accent); font-size: 1.1rem; }
-    .progress-track { background: var(--border); height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-top: 4px; }
-    .progress-fill { background: var(--accent); height: 100%; width: 25%; transition: width 0.3s ease; box-shadow: 0 0 10px var(--accent-glow); }
-
-    /* Main Container */
-    main { flex: 1; max-width: 900px; width: 100%; margin: 0 auto; padding: 1.5rem; padding-bottom: 5rem; }
-    .screen { display: none; }
-    .screen.active { display: block; animation: fadeIn 0.2s ease-in; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Cards & UI Elements */
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; }
-    .btn { background: var(--accent); color: #000; font-weight: 700; border: none; padding: 0.85rem 1.5rem; border-radius: 10px; cursor: pointer; width: 100%; transition: opacity 0.2s; }
-    .btn:hover { opacity: 0.9; }
-    .btn-secondary { background: #27272a; color: var(--text); }
-
-    /* Onboarding Wizard */
-    .step-card { text-align: center; max-width: 500px; margin: 2rem auto; }
-    .option-grid { display: flex; flex-direction: column; gap: 0.75rem; margin: 1.5rem 0; text-align: left; }
-    .option-btn { background: #18181b; border: 1px solid var(--border); padding: 1rem; border-radius: 10px; color: var(--text); cursor: pointer; transition: border-color 0.2s; }
-    .option-btn:hover { border-color: var(--accent); }
-
-    /* Task Cards with Deep Execution & Inline AI */
-    .task-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
-    .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-    .task-body { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.95rem; color: var(--muted); line-height: 1.6; }
-    .task-body.open { display: block; }
-    .inline-ai { background: #0f0f12; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
-
-    /* Bottom Navigation Bar */
-    nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(12, 12, 14, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.75rem 0; z-index: 100; }
-    .nav-item { background: none; border: none; color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-    .nav-item.active { color: var(--accent); font-weight: 600; }
-
-    /* Global Chat Assistant Screen */
-    #chat-box { height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; padding-right: 0.5rem; }
-    .msg { padding: 0.85rem 1rem; border-radius: 10px; max-width: 85%; font-size: 0.9rem; line-height: 1.4; }
-    .msg.user { background: var(--accent); color: #000; align-self: flex-end; font-weight: 500; }
-    .msg.ai { background: #18181b; border: 1px solid var(--border); color: var(--text); align-self: flex-start; }
-    .chat-input { display: flex; gap: 0.5rem; }
-    input[type="text"] { flex: 1; padding: 0.85rem; background: #18181b; border: 1px solid var(--border); border-radius: 8px; color: var(--text); outline: none; }
+    .glass-card {
+      background: rgba(18, 24, 38, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
   </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
+  <div id="root" class="flex-1 flex flex-col"></div>
 
-  <!-- Barra Superior Permanente de Progreso -->
-  <header>
-    <div class="header-content">
-      <div class="header-top">
-        <span class="logo">HORIZON OS</span>
-        <span id="stage-badge" style="font-size: 0.85rem; color: var(--accent);">Día 1 de 30</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-bar"></div>
-      </div>
-    </div>
-  </header>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
 
-  <!-- Contenido Principal -->
-  <main>
+    function App() {
+      // Estado de Onboarding y Formulario Secuencial
+      const [onboardingComplete, setOnboardingComplete] = useState(false);
+      const [currentStep, setCurrentStep] = useState(1);
 
-    <!-- PANTALLA 1: Onboarding Wizard (Preguntas por Pantallas) -->
-    <section id="sec-onboarding" class="screen active">
-      <div class="step-card card" id="wiz-step-1">
-        <h2>¿En qué etapa te encuentras?</h2>
-        <p style="color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem;">Ajustaremos las tareas diarias según tu punto de partida.</p>
-        <div class="option-grid">
-          <button class="option-btn" onclick="nextWizardStep(2, 'idea')">🚀 <strong>Tengo una idea / Desde 0</strong><br><small>Quiero estructurar el proyecto y validar la propuesta.</small></button>
-          <button class="option-btn" onclick="nextWizardStep(2, 'desarrollo')">🛠️ <strong>Proyecto ya creado</strong><br><small>Tengo la marca/idea pero necesito lanzarlo al mercado.</small></button>
-          <button class="option-btn" onclick="nextWizardStep(2, 'escalar')">📈 <strong>Ya facturando</strong><br><small>Busco optimizar conversión y escalar ventas.</small></button>
-        </div>
-      </div>
+      // Datos del Formulario
+      const [formData, setFormData] = useState({
+        stage: 'crear', // 'crear' o 'escalar'
+        niche: 'ropa', // 'ropa', 'app', 'servicios', 'ecommerce', 'otro'
+        timeCommitment: '2h', // '2h', '4h', '8h'
+        brandName: '',
+        goalTarget: '' // Ej: "10.000€/mes" o "Lanzar MVP"
+      });
 
-      <div class="step-card card" id="wiz-step-2" style="display:none;">
-        <h2>¿Cuál es tu foco principal este mes?</h2>
-        <div class="option-grid">
-          <button class="option-btn" onclick="finishWizard('Validación & Producto')">🎯 Crear la oferta y validar clientes</button>
-          <button class="option-btn" onclick="finishWizard('Marketing & Embudo')">📣 Lanzar embudo de captación de tráfico</button>
-          <button class="option-btn" onclick="finishWizard('Ventas & Cierre')">💰 Optimizar proceso de ventas directas</button>
-        </div>
-      </div>
-    </section>
+      // Plan Dinámico Generado
+      const [planDays, setPlanDays] = useState([]);
+      const [currentDayIndex, setCurrentDayIndex] = useState(0);
 
-    <!-- PANTALLA 2: Pasos Diarios Detallados -->
-    <section id="sec-today" class="screen">
-      <h2 style="margin-bottom: 0.5rem;">Plan de Hoy - Ejecución Táctica</h2>
-      <p style="color: var(--muted); margin-bottom: 1.5rem;">Haz clic en cada paso para ver la guía exacta de implementación.</p>
+      // Asesor Copiloto State
+      const [aiQuery, setAiQuery] = useState('');
+      const [aiResponse, setAiResponse] = useState('');
+      const [aiLoading, setAiLoading] = useState(false);
 
-      <div id="tasks-container">
-        <!-- Tarea 1 -->
-        <div class="task-card">
-          <div class="task-header" onclick="toggleTaskBody('tb1')">
-            <div>
-              <span style="color: var(--accent); font-weight: bold; margin-right: 8px;">Paso 1</span>
-              <strong>Configurar Embudo de Captación y Mensajes Directos</strong>
-            </div>
-            <span>▼</span>
-          </div>
-          <div class="task-body" id="tb1">
-            <p><strong>Cómo ejecutarlo exactamente:</strong></p>
-            <ol style="margin-left: 1.2rem; margin-top: 0.5rem; margin-bottom: 1rem;">
-              <li>Define tu oferta de entrada en un mensaje de no más de 3 frases.</li>
-              <li>Prepara las plantillas de contacto directo alineadas con el gancho principal.</li>
-              <li>Configura la respuesta automática en tus redes o canal de conversión.</li>
-            </ol>
-            <!-- Asesor IA Integrado -->
-            <div class="inline-ai">
-              <strong style="color: var(--accent); font-size: 0.85rem;">🤖 Asesor Copiloto para esta tarea:</strong>
-              <div class="chat-input" style="margin-top: 0.5rem;">
-                <input type="text" id="ai-input-1" placeholder="Ej: Redáctame 3 mensajes para enviar a prospectos..." />
-                <button class="btn" style="width: auto;" onclick="askInlineAI('ai-input-1', 'ai-res-1')">Consultar</button>
+      // Copiloto General Chat
+      const [activeTab, setActiveTab] = useState('roadmap'); // 'roadmap' o 'copilot'
+      const [generalMessages, setGeneralMessages] = useState([]);
+      const [generalInput, setGeneralInput] = useState('');
+
+      // Generar Estrategia según respuestas del Cuestionario
+      const generateCustomStrategy = (data) => {
+        let days = [];
+        const isCrear = data.stage === 'crear';
+        const isRopa = data.niche === 'ropa';
+        const isApp = data.niche === 'app';
+        const isShortTime = data.timeCommitment === '2h';
+
+        if (isCrear) {
+          if (isRopa) {
+            days = [
+              {
+                day: 1,
+                title: "Naming, Concepto y ADN de Marca",
+                tasks: [
+                  { step: "Definir universo visual y filosofía de la marca de ropa", desc: "Establece el concepto estético (ej. streetwear minimalista, heavy-weight cotton, corte boxy fit)." },
+                  { step: "Registrar o verificar disponibilidad de dominio e Instagram", desc: "Comprueba en OEPM / Namecheap y reserva los handles oficiales." }
+                ]
+              },
+              {
+                day: 2,
+                title: "Identidad Visual y Diseño de Colección",
+                tasks: [
+                  { step: "Diseñar Logotipo, Isotipo y Paleta de Color", desc: "Crea las variantes de logo vectoriales y tipografía de acompañamiento." },
+                  { step: "Crear Fichas Técnicas (Tech Packs)", desc: "Especifica gramajes, tipo de tela, bordados, estampaciones y medidas por talla." }
+                ]
+              },
+              {
+                day: 3,
+                title: "Búsqueda de Proveedores y Muestreo",
+                tasks: [
+                  { step: "Contactar con talleres/fabricantes textiles", desc: "Solicita cotizaciones para tiradas iniciales y tiempos de producción de muestras." },
+                  { step: "Solicitar muestras de corte y tela", desc: "Valora caída, calidad de algodón y acabados antes de la producción final." }
+                ]
+              },
+              {
+                day: 4,
+                title: "Creación de la Tienda Online & Estrategia Teaser",
+                tasks: [
+                  { step: "Configurar Shopify / E-commerce con el branding", desc: "Sube imágenes conceptuales, política de envíos y pasarela de pago." },
+                  { step: "Iniciar campaña Teaser en redes sociales", desc: "Publica detrás de cámaras (BTS) del proceso de diseño para generar expectativa." }
+                ]
+              }
+            ];
+          } else if (isApp) {
+            days = [
+              {
+                day: 1,
+                title: "Propuesta de Valor & Especificación Técnica",
+                tasks: [
+                  { step: "Definir el problema central y la solución clave de la App", desc: "Resume en una frase la transformación que entrega el software." },
+                  { step: "Crear el documento de funcionalidades (PRD)", desc: "Lista la funcionalidad principal (MVP) que debe estar lista para el Día 1." }
+                ]
+              },
+              {
+                day: 2,
+                title: "Wireframes & Identidad de Interfaz (UI/UX)",
+                tasks: [
+                  { step: "Diseñar esquemas de pantalla principal y navegación", desc: "Aboceta el flujo de usuario desde el registro hasta el valor principal." },
+                  { step: "Definir Sistema de Diseño básico", desc: "Colores de interfaz, tipografía readable y estado de botones." }
+                ]
+              },
+              {
+                day: 3,
+                title: "Landing Page de Captación de Beta Testers",
+                tasks: [
+                  { step: "Desplegar Landing Page con formulario de Waitlist", desc: "Publica una página concisa con un gancho atractivo para registrar emails." },
+                  { step: "Lanzar anuncios/tráfico orgánico a la lista de espera", desc: "Mide el interés real antes de completar todo el desarrollo." }
+                ]
+              }
+            ];
+          } else {
+            days = [
+              {
+                day: 1,
+                title: "Cimientos de la Oferta y Posicionamiento",
+                tasks: [
+                  { step: "Definir el Avatar de Cliente y Oferta Irresistible", desc: "Especifica qué dolor resuelves y cuál es la promesa principal." },
+                  { step: "Diseñar la estructura del servicio o producto", desc: "Detalla entregables, garantías y precios de entrada." }
+                ]
+              },
+              {
+                day: 2,
+                title: "Estructura de Ventas y Canal de Conversión",
+                tasks: [
+                  { step: "Montar embudo simple de captación", desc: "Pagina de reserva de llamadas o catálogo directo de producto." },
+                  { step: "Preparar guiones de ventas o plantillas de respuesta", desc: "Define la secuencia de seguimiento para prospectos." }
+                ]
+              }
+            ];
+          }
+        } else {
+          // Fase ESCALAR
+          days = [
+            {
+              day: 1,
+              title: "Auditoría de Embudo & Métricas Clave",
+              tasks: [
+                { step: "Analizar ratio de conversión actual y coste de adquisición", desc: "Revisa qué canal aporta el tráfico con mayor ROAS o tasa de cierre." },
+                { step: "Eliminar fricciones en la pasarela o flujo de compra", desc: "Simplifica el proceso de checkout o agendamiento." }
+              ]
+            },
+            {
+              day: 2,
+              title: "Activación de Sistema de Ventas Directas (Setters / Outreach)",
+              tasks: [
+                { step: "Configurar embudo de captación por mensajes directos (DM)", desc: "Establece guiones para convertir comentarios y me gustas en conversaciones." },
+                { step: "Lanzar campaña de prospección diaria activa", desc: "Contacta con prospectos cualificados con una oferta de bajo ticket o llamada." }
+              ]
+            },
+            {
+              day: 3,
+              title: "Escalado de Contenido y Tráfico de Pago",
+              tasks: [
+                { step: "Lanzar campaña de anuncios de retargeting y prospecting", desc: "Amplifica el contenido orgánico que mejor ha funcionado en los últimos 30 días." },
+                { step: "Establecer alianzas / Colaboraciones estratégicas", desc: "Activa colaboraciones para exponer la marca a nuevas audiencias masivas." }
+              ]
+            }
+          ];
+        }
+
+        // Si dispone de poco tiempo al día, duplicar la granularidad (días divididos)
+        if (isShortTime) {
+          days = days.map((d, index) => ({
+            ...d,
+            day: index + 1,
+            title: `${d.title} (Fase Acelerada Parte ${index + 1})`
+          }));
+        }
+
+        return days;
+      };
+
+      const handleNextStep = () => {
+        if (currentStep < 4) {
+          setCurrentStep(currentStep + 1);
+        } else {
+          // Finalizar Onboarding
+          const generatedPlan = generateCustomStrategy(formData);
+          setPlanDays(generatedPlan);
+          setOnboardingComplete(true);
+        }
+      };
+
+      // Consultar al Copiloto Integrado por Tarea
+      const handleAskTaskCopilot = async (taskContext) => {
+        if (!aiQuery.trim()) return;
+        setAiLoading(true);
+        setAiResponse('');
+
+        const prompt = `Contexto del cliente:
+- Fase: ${formData.stage === 'crear' ? 'Crear proyecto nuevo' : 'Escalar negocio existente'}
+- Nicho: ${formData.niche}
+- Tiempo diario disponible: ${formData.timeCommitment}
+- Marca/Proyecto: ${formData.brandName || 'Horizon Project'}
+- Objetivo: ${formData.goalTarget || 'Crecer y facturar'}
+
+Tarea actual a ejecutar: "${taskContext}"
+Pregunta del usuario: "${aiQuery}"
+
+Instrucción: Da una respuesta sumamente táctica, directa y aplicable en máximo 3-4 viñetas o pasos concisos. Sin rodeos.`;
+
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+          });
+          const data = await res.json();
+          setAiResponse(data.text || 'Sin respuesta.');
+        } catch (err) {
+          setAiResponse('Error al comunicarse con el copiloto.');
+        } finally {
+          setAiLoading(false);
+        }
+      };
+
+      // Chat General del Copiloto Estratégico
+      const handleSendGeneralMessage = async () => {
+        if (!generalInput.trim()) return;
+        const userMsg = generalInput;
+        setGeneralMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+        setGeneralInput('');
+
+        const prompt = `Actúa como el Asistente Director Ejecutivo de Horizon OS para el usuario.
+Contexto del usuario:
+- Nicho: ${formData.niche}
+- Fase: ${formData.stage}
+- Disponibilidad: ${formData.timeCommitment} al día.
+- Objetivo: ${formData.goalTarget}
+
+Pregunta: ${userMsg}`;
+
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+          });
+          const data = await res.json();
+          setGeneralMessages(prev => [...prev, { role: 'assistant', text: data.text }]);
+        } catch (err) {
+          setGeneralMessages(prev => [...prev, { role: 'assistant', text: 'Error de comunicación con la IA.' }]);
+        }
+      };
+
+      return (
+        <div class="flex-1 flex flex-col max-w-6xl w-full mx-auto p-4 md:p-6">
+          {/* Header Superior */}
+          <header class="flex items-center justify-between pb-6 mb-6 border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xl">
+                H
               </div>
-              <div id="ai-res-1" style="margin-top: 0.75rem; font-size: 0.85rem; color: #e4e4e7;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tarea 2 -->
-        <div class="task-card">
-          <div class="task-header" onclick="toggleTaskBody('tb2')">
-            <div>
-              <span style="color: var(--accent); font-weight: bold; margin-right: 8px;">Paso 2</span>
-              <strong>Lanzar Campaña de Comunicación Inicial</strong>
-            </div>
-            <span>▼</span>
-          </div>
-          <div class="task-body" id="tb2">
-            <p><strong>Cómo ejecutarlo exactamente:</strong></p>
-            <ul style="margin-left: 1.2rem; margin-top: 0.5rem; margin-bottom: 1rem;">
-              <li>Publica el primer contenido enfocado al problema que resuelve tu producto.</li>
-              <li>Realiza 10 contactos directos con el embudo configurado en el Paso 1.</li>
-            </ul>
-            <div class="inline-ai">
-              <strong style="color: var(--accent); font-size: 0.85rem;">🤖 Asesor Copiloto para esta tarea:</strong>
-              <div class="chat-input" style="margin-top: 0.5rem;">
-                <input type="text" id="ai-input-2" placeholder="Ej: Dá un guión para el primer contenido de la campaña..." />
-                <button class="btn" style="width: auto;" onclick="askInlineAI('ai-input-2', 'ai-res-2')">Consultar</button>
+              <div>
+                <h1 class="text-xl font-bold tracking-tight text-white">HORIZON OS</h1>
+                <p class="text-xs text-slate-400">Sistema Operativo Estratégico & Ejecución Táctica</p>
               </div>
-              <div id="ai-res-2" style="margin-top: 0.75rem; font-size: 0.85rem; color: #e4e4e7;"></div>
             </div>
-          </div>
+
+            {onboardingComplete && (
+              <div class="flex items-center space-x-2 bg-slate-900 border border-slate-800 p-1.5 rounded-xl text-xs">
+                <button
+                  onClick={() => setActiveTab('roadmap')}
+                  class={`px-3 py-1.5 rounded-lg font-medium transition ${activeTab === 'roadmap' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Hoja de Ruta ({planDays.length} Días)
+                </button>
+                <button
+                  onClick={() => setActiveTab('copilot')}
+                  class={`px-3 py-1.5 rounded-lg font-medium transition ${activeTab === 'copilot' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Copiloto General
+                </button>
+              </div>
+            )}
+          </header>
+
+          {/* FLUSO 1: CUESTIONARIO ONBOARDING SECUENCIAL */}
+          {!onboardingComplete && (
+            <main class="flex-1 flex items-center justify-center">
+              <div class="glass-card p-8 rounded-2xl max-w-xl w-full shadow-2xl relative overflow-hidden">
+                {/* Indicador de Progresión */}
+                <div class="flex items-center justify-between mb-8">
+                  {[1, 2, 3, 4].map(stepNum => (
+                    <div key={stepNum} class="flex items-center">
+                      <div class={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm transition ${
+                        currentStep === stepNum
+                          ? 'bg-emerald-500 text-slate-950 ring-4 ring-emerald-500/20'
+                          : currentStep > stepNum
+                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40'
+                          : 'bg-slate-800 text-slate-500'
+                      }`}>
+                        {stepNum}
+                      </div>
+                      {stepNum < 4 && (
+                        <div class={`w-12 h-1 mx-2 rounded ${currentStep > stepNum ? 'bg-emerald-500/50' : 'bg-slate-800'}`}></div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* PASO 1: FASE DEL PROYECTO */}
+                {currentStep === 1 && (
+                  <div class="space-y-5">
+                    <h2 class="text-2xl font-bold text-white">¿En qué punto te encuentras?</h2>
+                    <p class="text-sm text-slate-400">Selecciona el estado actual de tu iniciativa para calibrar los cimientos.</p>
+                    
+                    <div class="grid grid-cols-1 gap-4 pt-2">
+                      <button
+                        onClick={() => setFormData({ ...formData, stage: 'crear' })}
+                        class={`p-5 rounded-xl border text-left transition flex items-start justify-between ${
+                          formData.stage === 'crear'
+                            ? 'bg-emerald-500/10 border-emerald-500 text-white'
+                            : 'bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700'
+                        }`}
+                      >
+                        <div>
+                          <div class="font-bold text-lg mb-1">🚀 Crear un Proyecto Nuevo</div>
+                          <div class="text-xs text-slate-400">Empezar desde cero: definir nombre, identidad visual, MVP o lanzamiento.</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => setFormData({ ...formData, stage: 'escalar' })}
+                        class={`p-5 rounded-xl border text-left transition flex items-start justify-between ${
+                          formData.stage === 'escalar'
+                            ? 'bg-emerald-500/10 border-emerald-500 text-white'
+                            : 'bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700'
+                        }`}
+                      >
+                        <div>
+                          <div class="font-bold text-lg mb-1">📈 Escalar Negocio Existente</div>
+                          <div class="text-xs text-slate-400">Optimizar embudos, aumentar facturación, prospección directa y tráfico.</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* PASO 2: TIPO DE NICHO */}
+                {currentStep === 2 && (
+                  <div class="space-y-5">
+                    <h2 class="text-2xl font-bold text-white">¿Cuál es tu modelo / nicho?</h2>
+                    <p class="text-sm text-slate-400">Cada tipo de negocio requiere hitos tácticos completamente diferentes.</p>
+                    
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                      {[
+                        { id: 'ropa', label: '👕 Marca de Ropa / Moda', desc: 'Tech packs, muestras, drops' },
+                        { id: 'app', label: '📱 Aplicación / SaaS', desc: 'Wireframes, MVP, beta testers' },
+                        { id: 'servicios', label: '🤝 Servicios / Agencia', desc: 'High ticket, llamadas de venta' },
+                        { id: 'ecommerce', label: '🛍️ E-commerce General', desc: 'Catálogo, ROAS, conversión' }
+                      ].map(item => (
+                        <button
+                          key={item.id}
+                          onClick={() => setFormData({ ...formData, niche: item.id })}
+                          class={`p-4 rounded-xl border text-left transition ${
+                            formData.niche === item.id
+                              ? 'bg-emerald-500/10 border-emerald-500 text-white'
+                              : 'bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700'
+                          }`}
+                        >
+                          <div class="font-bold text-sm mb-1">{item.label}</div>
+                          <div class="text-xs text-slate-400">{item.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* PASO 3: TIEMPO DIARIO */}
+                {currentStep === 3 && (
+                  <div class="space-y-5">
+                    <h2 class="text-2xl font-bold text-white">¿Cuánto tiempo puedes dedicarle al día?</h2>
+                    <p class="text-sm text-slate-400">Ajustaremos la carga de trabajo por jornada para garantizar ejecución sin bloqueo.</p>
+
+                    <div class="grid grid-cols-1 gap-3 pt-2">
+                      {[
+                        { id: '2h', title: '⏱️ 1 a 2 Horas / día', desc: 'Enfoque enfocado y pasos hiper-atómicos.' },
+                        { id: '4h', title: '⚡ 3 a 4 Horas / día', desc: 'Ritmo acelerado de ejecución diaria.' },
+                        { id: '8h', title: '🔥 Tiempo Completo (5-8h / día)', desc: 'Máxima intensidad para resultados inmediatos.' }
+                      ].map(item => (
+                        <button
+                          key={item.id}
+                          onClick={() => setFormData({ ...formData, timeCommitment: item.id })}
+                          class={`p-4 rounded-xl border text-left transition ${
+                            formData.timeCommitment === item.id
+                              ? 'bg-emerald-500/10 border-emerald-500 text-white'
+                              : 'bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700'
+                          }`}
+                        >
+                          <div class="font-bold text-base mb-1">{item.title}</div>
+                          <div class="text-xs text-slate-400">{item.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* PASO 4: NOMBRE Y OBJETIVO */}
+                {currentStep === 4 && (
+                  <div class="space-y-5">
+                    <h2 class="text-2xl font-bold text-white">Detalles Finales & Meta</h2>
+                    <p class="text-sm text-slate-400">Ponle nombre a la iniciativa y define la meta concreta.</p>
+
+                    <div class="space-y-4 pt-2">
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Nombre de la Marca o Proyecto</label>
+                        <input
+                          type="text"
+                          placeholder="Ej. Timeless, Horizon App, GLA..."
+                          value={formData.brandName}
+                          onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+                          class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+                          {formData.stage === 'escalar' ? 'Objetivo de Facturación Mensual' : 'Meta Principal de Lanzamiento'}
+                        </label>
+                        <input
+                          type="text"
+                          placeholder={formData.stage === 'escalar' ? 'Ej. Pasar de 5.000€ a 15.000€/mes' : 'Ej. Lanzar primera colección de 50 prendas'}
+                          value={formData.goalTarget}
+                          onChange={(e) => setFormData({ ...formData, goalTarget: e.target.value })}
+                          class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Botón de Siguiente / Generar */}
+                <div class="mt-8 pt-4 border-t border-slate-800 flex justify-between items-center">
+                  {currentStep > 1 ? (
+                    <button
+                      onClick={() => setCurrentStep(currentStep - 1)}
+                      class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition"
+                    >
+                      Atrás
+                    </button>
+                  ) : <div></div>}
+
+                  <button
+                    onClick={handleNextStep}
+                    class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm"
+                  >
+                    {currentStep === 4 ? 'Generar Mi Estrategia Personalizada' : 'Siguiente Paso →'}
+                  </button>
+                </div>
+              </div>
+            </main>
+          )}
+
+          {/* FLUJO 2: DASHBOARD CON CALENDARIO Y COPILOTO */}
+          {onboardingComplete && activeTab === 'roadmap' && (
+            <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Menú Izquierdo: Lista de Días */}
+              <div class="lg:col-span-4 space-y-3">
+                <div class="glass-card p-4 rounded-2xl mb-4">
+                  <div class="text-xs text-emerald-400 font-semibold uppercase tracking-wider mb-1">Estrategia Activa</div>
+                  <div class="text-lg font-bold text-white">{formData.brandName || 'Horizon Project'}</div>
+                  <div class="text-xs text-slate-400 mt-1 flex items-center space-x-2">
+                    <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300 uppercase">{formData.niche}</span>
+                    <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300">{formData.timeCommitment}/día</span>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  {planDays.map((dayData, idx) => (
+                    <button
+                      key={dayData.day}
+                      onClick={() => {
+                        setCurrentDayIndex(idx);
+                        setAiResponse('');
+                        setAiQuery('');
+                      }}
+                      class={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between ${
+                        currentDayIndex === idx
+                          ? 'bg-emerald-500/10 border-emerald-500 text-white'
+                          : 'bg-slate-900/40 border-slate-800/80 text-slate-400 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div class="text-xs text-emerald-400 font-bold uppercase mb-0.5">Día {dayData.day}</div>
+                        <div class="font-medium text-sm text-slate-200">{dayData.title}</div>
+                      </div>
+                      <div class="text-xs text-slate-500">{dayData.tasks.length} tareas</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Panel Central: Tareas del Día y Asesor Táctico */}
+              <div class="lg:col-span-8">
+                {planDays[currentDayIndex] && (
+                  <div class="glass-card p-6 rounded-2xl space-y-6">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                      <div>
+                        <span class="text-xs font-bold uppercase text-emerald-400 tracking-wider">
+                          Paso Diario #{planDays[currentDayIndex].day}
+                        </span>
+                        <h2 class="text-2xl font-bold text-white mt-1">
+                          {planDays[currentDayIndex].title}
+                        </h2>
+                      </div>
+                      
+                      {currentDayIndex < planDays.length - 1 && (
+                        <button
+                          onClick={() => {
+                            setCurrentDayIndex(currentDayIndex + 1);
+                            setAiResponse('');
+                            setAiQuery('');
+                          }}
+                          class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition"
+                        >
+                          Completar día y avanzar →
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Lista de Tareas */}
+                    <div class="space-y-4">
+                      {planDays[currentDayIndex].tasks.map((task, i) => (
+                        <div key={i} class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl space-y-2">
+                          <div class="flex items-start space-x-3">
+                            <input type="checkbox" class="mt-1 accent-emerald-500 w-4 h-4 rounded cursor-pointer" />
+                            <div>
+                              <h3 class="font-bold text-slate-200 text-base">{task.step}</h3>
+                              <p class="text-xs text-slate-400 mt-1">{task.desc}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Asesor Copiloto Integrado para esta tarea */}
+                    <div class="pt-4 border-t border-slate-800/80">
+                      <div class="flex items-center space-x-2 text-xs font-bold uppercase text-emerald-400 tracking-wider mb-2">
+                        <span>🤖 Asesor Táctico Copiloto:</span>
+                      </div>
+                      
+                      <div class="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          placeholder="Ej: ¿Cómo redacto exactamente este mensaje o qué herramienta uso?"
+                          value={aiQuery}
+                          onChange={(e) => setAiQuery(e.target.value)}
+                          class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                        />
+                        <button
+                          onClick={() => handleAskTaskCopilot(planDays[currentDayIndex].title)}
+                          disabled={aiLoading}
+                          class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition disabled:opacity-50"
+                        >
+                          {aiLoading ? 'Analizando...' : 'Consultar'}
+                        </button>
+                      </div>
+
+                      {aiResponse && (
+                        <div class="mt-3 p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl text-xs text-slate-200 leading-relaxed space-y-2 whitespace-pre-line">
+                          {aiResponse}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </main>
+          )}
+
+          {/* PESTAÑA: COPILOTO GENERAL */}
+          {onboardingComplete && activeTab === 'copilot' && (
+            <main class="flex-1 flex flex-col glass-card rounded-2xl overflow-hidden h-[600px]">
+              <div class="p-4 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 class="font-bold text-white text-sm">Copiloto Estratégico Ejecutivo</h3>
+                  <p class="text-xs text-slate-400">Consulta decisiones de negocio, copywriting o resolución de cuellos de botella.</p>
+                </div>
+              </div>
+
+              <div class="flex-1 p-4 overflow-y-auto space-y-3">
+                {generalMessages.length === 0 && (
+                  <div class="text-center text-slate-500 text-xs my-12">
+                    Escribe tu primera consulta táctica para tu proyecto ({formData.brandName}).
+                  </div>
+                )}
+                {generalMessages.map((msg, i) => (
+                  <div key={i} class={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div class={`max-w-xl p-3.5 rounded-xl text-xs leading-relaxed whitespace-pre-line ${
+                      msg.role === 'user'
+                        ? 'bg-emerald-500 text-slate-950 font-medium'
+                        : 'bg-slate-900 border border-slate-800 text-slate-200'
+                    }`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div class="p-3 bg-slate-900/90 border-t border-slate-800 flex items-center space-x-2">
+                <input
+                  type="text"
+                  placeholder="Pregunta lo que quieras sobre tu estrategia..."
+                  value={generalInput}
+                  onChange={(e) => setGeneralInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendGeneralMessage()}
+                  class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                />
+                <button
+                  onClick={handleSendGeneralMessage}
+                  class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition"
+                >
+                  Enviar
+                </button>
+              </div>
+            </main>
+          )}
         </div>
-      </div>
-    </section>
-
-    <!-- PANTALLA 3: Calendario Global -->
-    <section id="sec-calendar" class="screen">
-      <h2>Calendario del Plan (30 Días)</h2>
-      <div class="card" style="margin-top: 1rem;">
-        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; text-align: center;" id="cal-grid"></div>
-      </div>
-    </section>
-
-    <!-- PANTALLA 4: Copiloto IA General -->
-    <section id="sec-copilot" class="screen">
-      <h2>Copiloto Estratégico General</h2>
-      <div class="card" style="margin-top: 1rem;">
-        <div id="chat-box">
-          <div class="msg ai">Hola, Gonzalo. Estoy listo para asistirte en cualquier decisión táctica de Horizon OS.</div>
-        </div>
-        <div class="chat-input">
-          <input type="text" id="global-chat-input" placeholder="Escribe tu consulta estratégica..." />
-          <button class="btn" style="width: auto;" onclick="sendGlobalChat()">Enviar</button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Navegación Inferior Estilo App Real -->
-  <nav>
-    <button class="nav-item active" onclick="navTo('sec-onboarding', this)"><span>📋</span>Onboarding</button>
-    <button class="nav-item" onclick="navTo('sec-today', this)"><span>⚡</span>Pasos de Hoy</button>
-    <button class="nav-item" onclick="navTo('sec-calendar', this)"><span>📅</span>Calendario</button>
-    <button class="nav-item" onclick="navTo('sec-copilot', this)"><span>🤖</span>Copiloto IA</button>
-  </nav>
-
-  <script>
-    // Navigation Control
-    function navTo(screenId, element) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
-      if (element) element.classList.add('active');
+      );
     }
 
-    // Wizard Logic
-    function nextWizardStep(step, val) {
-      document.getElementById('wiz-step-1').style.display = 'none';
-      document.getElementById('wiz-step-2').style.display = 'block';
-      document.getElementById('progress-bar').style.width = '20%';
-    }
-
-    function finishWizard(goal) {
-      document.getElementById('progress-bar').style.width = '35%';
-      navTo('sec-today', document.querySelectorAll('.nav-item')[1]);
-    }
-
-    // Toggle Task Content
-    function toggleTaskBody(id) {
-      const el = document.getElementById(id);
-      el.classList.toggle('open');
-    }
-
-    // Calendar Generation
-    const calGrid = document.getElementById('cal-grid');
-    for (let i = 1; i <= 28; i++) {
-      const day = document.createElement('div');
-      day.style.cssText = 'background: #18181b; border: 1px solid #27272a; padding: 0.5rem; border-radius: 6px; font-size: 0.75rem;';
-      day.innerHTML = `<strong>D${i}</strong>`;
-      if(i === 1) day.style.borderColor = '#10b981';
-      calGrid.appendChild(day);
-    }
-
-    // API Call Function (Vercel Integration)
-    async function callGemini(promptText) {
-      try {
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: promptText })
-        });
-        const data = await response.json();
-        if (data.text) return data.text;
-        if (data.error) return 'Error API: ' + data.error;
-        return 'Sin respuesta del servidor.';
-      } catch (err) {
-        return 'Error de conexión con la función /api/chat.';
-      }
-    }
-
-    // Task-specific Inline AI Assistance
-    async function askInlineAI(inputId, resultId) {
-      const input = document.getElementById(inputId);
-      const resDiv = document.getElementById(resultId);
-      if (!input.value.trim()) return;
-
-      resDiv.textContent = 'Analizando con el Copiloto...';
-      const reply = await callGemini(input.value);
-      resDiv.textContent = reply;
-    }
-
-    // Global Chat Assistance
-    async function sendGlobalChat() {
-      const input = document.getElementById('global-chat-input');
-      const box = document.getElementById('chat-box');
-      const prompt = input.value.trim();
-      if (!prompt) return;
-
-      // Append User Msg
-      const uMsg = document.createElement('div');
-      uMsg.className = 'msg user';
-      uMsg.textContent = prompt;
-      box.appendChild(uMsg);
-      input.value = '';
-
-      // Append Loading AI Msg
-      const aiMsg = document.createElement('div');
-      aiMsg.className = 'msg ai';
-      aiMsg.textContent = 'Pensando...';
-      box.appendChild(aiMsg);
-      box.scrollTop = box.scrollHeight;
-
-      const reply = await callGemini(prompt);
-      aiMsg.textContent = reply;
-      box.scrollTop = box.scrollHeight;
-    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
