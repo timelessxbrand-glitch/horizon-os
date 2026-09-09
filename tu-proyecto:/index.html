@@ -30,7 +30,7 @@
   <div id="root" class="flex-1 flex flex-col"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState } = React;
 
     function App() {
       // Estado de Onboarding y Formulario Secuencial
@@ -41,14 +41,20 @@
       const [formData, setFormData] = useState({
         stage: 'crear', // 'crear' o 'escalar'
         niche: 'ropa', // 'ropa', 'app', 'servicios', 'ecommerce', 'otro'
+        customNiche: '', // Si elige 'otro'
         timeCommitment: '2h', // '2h', '4h', '8h'
         brandName: '',
-        goalTarget: '' // Ej: "10.000€/mes" o "Lanzar MVP"
+        goalTarget: ''
       });
 
-      // Plan Dinámico Generado
+      // Plan Dinámico Generado y Progreso
       const [planDays, setPlanDays] = useState([]);
       const [currentDayIndex, setCurrentDayIndex] = useState(0);
+      const [unlockedDayIndex, setUnlockedDayIndex] = useState(0); // Control de candados
+      const [completedTasks, setCompletedTasks] = useState({}); // { "dayIndex-taskIndex": true }
+
+      // Vista de Calendario vs Lista
+      const [viewMode, setViewMode] = useState('list'); // 'list' o 'grid'
 
       // Asesor Copiloto State
       const [aiQuery, setAiQuery] = useState('');
@@ -60,135 +66,91 @@
       const [generalMessages, setGeneralMessages] = useState([]);
       const [generalInput, setGeneralInput] = useState('');
 
-      // Generar Estrategia según respuestas del Cuestionario
+      // Generación Ultra-Específica y Granular según Tiempo Diario
       const generateCustomStrategy = (data) => {
-        let days = [];
         const isCrear = data.stage === 'crear';
-        const isRopa = data.niche === 'ropa';
-        const isApp = data.niche === 'app';
-        const isShortTime = data.timeCommitment === '2h';
+        const nicheText = data.niche === 'otro' ? data.customNiche || 'Negocio Personalizado' : data.niche;
+        const is2h = data.timeCommitment === '2h';
+        const is4h = data.timeCommitment === '4h';
+
+        let baseAtomicTasks = [];
 
         if (isCrear) {
-          if (isRopa) {
-            days = [
-              {
-                day: 1,
-                title: "Naming, Concepto y ADN de Marca",
-                tasks: [
-                  { step: "Definir universo visual y filosofía de la marca de ropa", desc: "Establece el concepto estético (ej. streetwear minimalista, heavy-weight cotton, corte boxy fit)." },
-                  { step: "Registrar o verificar disponibilidad de dominio e Instagram", desc: "Comprueba en OEPM / Namecheap y reserva los handles oficiales." }
-                ]
-              },
-              {
-                day: 2,
-                title: "Identidad Visual y Diseño de Colección",
-                tasks: [
-                  { step: "Diseñar Logotipo, Isotipo y Paleta de Color", desc: "Crea las variantes de logo vectoriales y tipografía de acompañamiento." },
-                  { step: "Crear Fichas Técnicas (Tech Packs)", desc: "Especifica gramajes, tipo de tela, bordados, estampaciones y medidas por talla." }
-                ]
-              },
-              {
-                day: 3,
-                title: "Búsqueda de Proveedores y Muestreo",
-                tasks: [
-                  { step: "Contactar con talleres/fabricantes textiles", desc: "Solicita cotizaciones para tiradas iniciales y tiempos de producción de muestras." },
-                  { step: "Solicitar muestras de corte y tela", desc: "Valora caída, calidad de algodón y acabados antes de la producción final." }
-                ]
-              },
-              {
-                day: 4,
-                title: "Creación de la Tienda Online & Estrategia Teaser",
-                tasks: [
-                  { step: "Configurar Shopify / E-commerce con el branding", desc: "Sube imágenes conceptuales, política de envíos y pasarela de pago." },
-                  { step: "Iniciar campaña Teaser en redes sociales", desc: "Publica detrás de cámaras (BTS) del proceso de diseño para generar expectativa." }
-                ]
-              }
+          if (data.niche === 'ropa') {
+            baseAtomicTasks = [
+              { title: "Definición del ADN y Moodboard de Marca", tasks: ["Crear panel de inspiración visual en Pinterest o Figma con referentes estéticos.", "Definir el concepto central y la propuesta de valor de la marca."] },
+              { title: "Naming y Comprobación de Disponibilidad", tasks: ["Lluvia de ideas de 10 nombres acordes al concepto.", "Verificar disponibilidad de dominios web (.com/.es) y usuario en Instagram/TikTok."] },
+              { title: "Identidad Gráfica - Logotipo e Isotipo", tasks: ["Bocetar o generar las primeras propuestas vectoriales del logotipo.", "Definir las variantes de logo (principal, versión reducida e isotipo)."] },
+              { title: "Identidad Gráfica - Tipografías y Paleta de Color", tasks: ["Seleccionar la tipografía principal de marca y la secundaria para textos.", "Definir los códigos de color hex (principal, secundario y acento)."] },
+              { title: "Ficha Técnica I - Patronaje y Medidas", tasks: ["Crear la tabla de medidas por talla (S, M, L, XL) para la primera prenda.", "Especificar el tipo de corte (ej. Oversize, Boxy Fit, Regular)."] },
+              { title: "Ficha Técnica II - Tejidos y Gramajes", tasks: ["Seleccionar la composición del tejido (ej. 100% Algodón Peinado 280 GSM).", "Especificar tipo de estampación o bordado con sus dimensiones exactas."] },
+              { title: "Prospección de Proveedores Textiles", tasks: ["Listar 5 talleres o fabricantes textiles locales/internacionales.", "Enviar correos de solicitud de cotización y catálogo de muestras a los proveedores."] },
+              { title: "Solicitud y Evaluación de Muestras", tasks: ["Encargar las primeras muestras físicas de la prenda.", "Inspeccionar costuras, caída del tejido y calidad del acabado al recibir la muestra."] },
+              { title: "Setup de Tienda Online (E-commerce)", tasks: ["Crear cuenta en Shopify y configurar el dominio propio.", "Subir el tema visual alineado con la paleta de colores y tipografía."] },
+              { title: "Páginas Legales y Pasarelas de Pago", tasks: ["Configurar Stripe/PayPal y métodos de pago.", "Redactar e integrar políticas de envío, devoluciones y términos legales."] },
+              { title: "Estrategia Teaser y Expectativa en Redes", tasks: ["Crear los perfiles oficiales en redes sociales.", "Publicar los primeros 3 contenidos tipo 'Behind The Scenes' del proceso de creación."] },
+              { title: "Campamentos de Captación / Lista de Espera", tasks: ["Crear formulario en la tienda para captar emails a cambio de acceso anticipado.", "Lanzar campaña de expectativa para conseguir los primeros 100 inscritos."] }
             ];
-          } else if (isApp) {
-            days = [
-              {
-                day: 1,
-                title: "Propuesta de Valor & Especificación Técnica",
-                tasks: [
-                  { step: "Definir el problema central y la solución clave de la App", desc: "Resume en una frase la transformación que entrega el software." },
-                  { step: "Crear el documento de funcionalidades (PRD)", desc: "Lista la funcionalidad principal (MVP) que debe estar lista para el Día 1." }
-                ]
-              },
-              {
-                day: 2,
-                title: "Wireframes & Identidad de Interfaz (UI/UX)",
-                tasks: [
-                  { step: "Diseñar esquemas de pantalla principal y navegación", desc: "Aboceta el flujo de usuario desde el registro hasta el valor principal." },
-                  { step: "Definir Sistema de Diseño básico", desc: "Colores de interfaz, tipografía readable y estado de botones." }
-                ]
-              },
-              {
-                day: 3,
-                title: "Landing Page de Captación de Beta Testers",
-                tasks: [
-                  { step: "Desplegar Landing Page con formulario de Waitlist", desc: "Publica una página concisa con un gancho atractivo para registrar emails." },
-                  { step: "Lanzar anuncios/tráfico orgánico a la lista de espera", desc: "Mide el interés real antes de completar todo el desarrollo." }
-                ]
-              }
+          } else if (data.niche === 'app') {
+            baseAtomicTasks = [
+              { title: "Definición del Problema y Alcance del MVP", tasks: ["Redactar el problema exacto que resuelve la app en una frase.", "Listar las 3 funcionalidades indispensables sin las cuales la app no funciona."] },
+              { title: "Wireframes en Papel / Figma", tasks: ["Dibujar el esquema de pantalla de registro e inicio de sesión.", "Dibujar el flujo principal donde el usuario obtiene el valor central."] },
+              { title: "Diseño de Interfaz (UI/UX Básica)", tasks: ["Definir el kit de UI: botones, inputs y colores de estado.", "Diseñar la pantalla principal en Figma o v0."] },
+              { title: "Landing Page de Lanzamiento", tasks: ["Redactar el titular principal y los beneficios clave.", "Publicar una landing con formulario para captar beta testers."] },
+              { title: "Setup de Desarrollo & Base de Datos", tasks: ["Configurar el repositorio y la arquitectura básica de proyecto.", "Definir la estructura de la base de datos (usuarios, tablas principales)."] },
+              { title: "Desarrollo del Flujo Principal (Día A)", tasks: ["Construir la pantalla de autenticación y perfil.", "Probar el registro y guardado de datos."] },
+              { title: "Desarrollo del Flujo Principal (Día B)", tasks: ["Implementar la funcionalidad núcleo del software.", "Realizar pruebas de usabilidad en local."] },
+              { title: "Beta Testing & Corrección de Bugs", tasks: ["Enviar acceso privado a los primeros 10 beta testers.", "Recopilar feedback directo y solucionar errores críticos."] }
             ];
           } else {
-            days = [
-              {
-                day: 1,
-                title: "Cimientos de la Oferta y Posicionamiento",
-                tasks: [
-                  { step: "Definir el Avatar de Cliente y Oferta Irresistible", desc: "Especifica qué dolor resuelves y cuál es la promesa principal." },
-                  { step: "Diseñar la estructura del servicio o producto", desc: "Detalla entregables, garantías y precios de entrada." }
-                ]
-              },
-              {
-                day: 2,
-                title: "Estructura de Ventas y Canal de Conversión",
-                tasks: [
-                  { step: "Montar embudo simple de captación", desc: "Pagina de reserva de llamadas o catálogo directo de producto." },
-                  { step: "Preparar guiones de ventas o plantillas de respuesta", desc: "Define la secuencia de seguimiento para prospectos." }
-                ]
-              }
+            // Nicho Personalizado o Servicios
+            baseAtomicTasks = [
+              { title: `Análisis del Modelo (${nicheText})`, tasks: ["Definir la propuesta de valor única para este modelo específico.", "Establecer la estructura de costes y precios sugeridos."] },
+              { title: "Avatar de Cliente Ideal", tasks: ["Identificar los 3 principales dolores del cliente objetivo.", "Definir los canales de comunicación donde se encuentra este cliente."] },
+              { title: "Diseño de la Oferta Irresistible", tasks: ["Estructurar los entregables y la promesa de transformación.", "Redactar la garantía y los bonos de acción rápida."] },
+              { title: "Construcción del Canal de Ventas", tasks: ["Diseñar la landing page o presentación comercial de la propuesta.", "Configurar el sistema de agendamiento o cobro directo."] },
+              { title: "Estrategia de Captación Inicial", tasks: ["Definir la vía de prospección orgánica o pagada.", "Preparar las plantillas de contacto inicial adaptadas a " + nicheText + "."] },
+              { title: "Lanzamiento y Primeras Conversaciones", tasks: ["Contactar a los primeros 20 prospectos cualificados.", "Ajustar la propuesta según las objeciones recibidas."] }
             ];
           }
         } else {
           // Fase ESCALAR
-          days = [
-            {
-              day: 1,
-              title: "Auditoría de Embudo & Métricas Clave",
-              tasks: [
-                { step: "Analizar ratio de conversión actual y coste de adquisición", desc: "Revisa qué canal aporta el tráfico con mayor ROAS o tasa de cierre." },
-                { step: "Eliminar fricciones en la pasarela o flujo de compra", desc: "Simplifica el proceso de checkout o agendamiento." }
-              ]
-            },
-            {
-              day: 2,
-              title: "Activación de Sistema de Ventas Directas (Setters / Outreach)",
-              tasks: [
-                { step: "Configurar embudo de captación por mensajes directos (DM)", desc: "Establece guiones para convertir comentarios y me gustas en conversaciones." },
-                { step: "Lanzar campaña de prospección diaria activa", desc: "Contacta con prospectos cualificados con una oferta de bajo ticket o llamada." }
-              ]
-            },
-            {
-              day: 3,
-              title: "Escalado de Contenido y Tráfico de Pago",
-              tasks: [
-                { step: "Lanzar campaña de anuncios de retargeting y prospecting", desc: "Amplifica el contenido orgánico que mejor ha funcionado en los últimos 30 días." },
-                { step: "Establecer alianzas / Colaboraciones estratégicas", desc: "Activa colaboraciones para exponer la marca a nuevas audiencias masivas." }
-              ]
-            }
+          baseAtomicTasks = [
+            { title: "Auditoría de Métricas de Conversión", tasks: ["Revisar la tasa de conversión actual de la web/embudo.", "Identificar el punto de fuga con mayor pérdida de usuarios."] },
+            { title: "Optimización de la Oferta y Pricing", tasks: ["Ajustar precios o paquetes de mayor ticket.", "Añadir elementos de urgencia y prueba social comprobada."] },
+            { title: "Estrategia de Captación por DM / Outreach", tasks: ["Redactar el guion de prospección en 3 pasos por mensaje directo.", "Establecer objetivo diario de 15 conversaciones iniciadas."] },
+            { title: "Estructura de Tráfico Pagado / Orgánico", tasks: ["Diseñar 3 creativos de anuncios orientados a conversión.", "Lanzar campaña de retargeting a usuarios que no completaron la compra."] },
+            { title: "Sistema de Retención y Valor de Vida (LTV)", tasks: ["Implementar secuencia de email marketing post-compra.", "Crear incentivos para incentivar la recompra o recomendación."] }
           ];
         }
 
-        // Si dispone de poco tiempo al día, duplicar la granularidad (días divididos)
-        if (isShortTime) {
-          days = days.map((d, index) => ({
-            ...d,
-            day: index + 1,
-            title: `${d.title} (Fase Acelerada Parte ${index + 1})`
-          }));
-        }
+        // Si el usuario tiene 1-2 horas al día, expandimos el plan para que cada día tenga máximo 2 tareas cortas
+        let days = [];
+        let dayCounter = 1;
+
+        baseAtomicTasks.forEach((item) => {
+          if (is2h) {
+            // Para 2h dividimos cada bloque en días súper específicos
+            days.push({
+              day: dayCounter++,
+              title: item.title,
+              tasks: item.tasks
+            });
+          } else if (is4h) {
+            days.push({
+              day: dayCounter++,
+              title: item.title,
+              tasks: item.tasks
+            });
+          } else {
+            // 8h: Se agrupan más tareas por jornada
+            days.push({
+              day: dayCounter++,
+              title: item.title,
+              tasks: item.tasks
+            });
+          }
+        });
 
         return days;
       };
@@ -197,10 +159,34 @@
         if (currentStep < 4) {
           setCurrentStep(currentStep + 1);
         } else {
-          // Finalizar Onboarding
           const generatedPlan = generateCustomStrategy(formData);
           setPlanDays(generatedPlan);
           setOnboardingComplete(true);
+        }
+      };
+
+      // Control de completado de tareas y días
+      const handleTaskToggle = (dayIdx, taskIdx) => {
+        const key = `${dayIdx}-${taskIdx}`;
+        setCompletedTasks(prev => ({
+          ...prev,
+          [key]: !prev[key]
+        }));
+      };
+
+      const isDayTasksComplete = (dayIdx) => {
+        const day = planDays[dayIdx];
+        if (!day) return false;
+        return day.tasks.every((_, tIdx) => completedTasks[`${dayIdx}-${tIdx}`]);
+      };
+
+      const handleCompleteDayAndAdvance = () => {
+        if (currentDayIndex < planDays.length - 1) {
+          const nextIdx = currentDayIndex + 1;
+          setUnlockedDayIndex(Math.max(unlockedDayIndex, nextIdx));
+          setCurrentDayIndex(nextIdx);
+          setAiResponse('');
+          setAiQuery('');
         }
       };
 
@@ -210,17 +196,19 @@
         setAiLoading(true);
         setAiResponse('');
 
+        const nicheName = formData.niche === 'otro' ? formData.customNiche : formData.niche;
+
         const prompt = `Contexto del cliente:
 - Fase: ${formData.stage === 'crear' ? 'Crear proyecto nuevo' : 'Escalar negocio existente'}
-- Nicho: ${formData.niche}
+- Nicho / Modelo: ${nicheName}
 - Tiempo diario disponible: ${formData.timeCommitment}
 - Marca/Proyecto: ${formData.brandName || 'Horizon Project'}
 - Objetivo: ${formData.goalTarget || 'Crecer y facturar'}
 
-Tarea actual a ejecutar: "${taskContext}"
-Pregunta del usuario: "${aiQuery}"
+Día/Tarea actual: "${taskContext}"
+Pregunta concreta del usuario: "${aiQuery}"
 
-Instrucción: Da una respuesta sumamente táctica, directa y aplicable en máximo 3-4 viñetas o pasos concisos. Sin rodeos.`;
+Instrucción: Da una respuesta sumamente táctica, directa y ejecutable en 3-4 viñetas accionables adaptadas a sus ${formData.timeCommitment} diarios.`;
 
         try {
           const res = await fetch('/api/chat', {
@@ -237,16 +225,18 @@ Instrucción: Da una respuesta sumamente táctica, directa y aplicable en máxim
         }
       };
 
-      // Chat General del Copiloto Estratégico
+      // Chat General del Copiloto
       const handleSendGeneralMessage = async () => {
         if (!generalInput.trim()) return;
         const userMsg = generalInput;
         setGeneralMessages(prev => [...prev, { role: 'user', text: userMsg }]);
         setGeneralInput('');
 
+        const nicheName = formData.niche === 'otro' ? formData.customNiche : formData.niche;
+
         const prompt = `Actúa como el Asistente Director Ejecutivo de Horizon OS para el usuario.
-Contexto del usuario:
-- Nicho: ${formData.niche}
+Contexto:
+- Modelo de Negocio: ${nicheName}
 - Fase: ${formData.stage}
 - Disponibilidad: ${formData.timeCommitment} al día.
 - Objetivo: ${formData.goalTarget}
@@ -265,6 +255,11 @@ Pregunta: ${userMsg}`;
           setGeneralMessages(prev => [...prev, { role: 'assistant', text: 'Error de comunicación con la IA.' }]);
         }
       };
+
+      // Porcentaje de Progreso Proporcional Real
+      const progressPercentage = planDays.length > 0 
+        ? Math.round((unlockedDayIndex / planDays.length) * 100)
+        : 0;
 
       return (
         <div class="flex-1 flex flex-col max-w-6xl w-full mx-auto p-4 md:p-6">
@@ -297,6 +292,22 @@ Pregunta: ${userMsg}`;
               </div>
             )}
           </header>
+
+          {/* BARRA DE PROGRESO HORIZONTAL PROPORCIONAL */}
+          {onboardingComplete && activeTab === 'roadmap' && (
+            <div class="mb-6 glass-card p-4 rounded-2xl">
+              <div class="flex items-center justify-between text-xs font-semibold mb-2">
+                <span class="text-slate-300">PROGRESO DE LA ESTRATEGIA</span>
+                <span class="text-emerald-400">{unlockedDayIndex} de {planDays.length} Días Completados ({progressPercentage}%)</span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                <div 
+                  class="h-full bg-emerald-500 transition-all duration-500 ease-out shadow-lg shadow-emerald-500/50"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
 
           {/* FLUSO 1: CUESTIONARIO ONBOARDING SECUENCIAL */}
           {!onboardingComplete && (
@@ -360,7 +371,7 @@ Pregunta: ${userMsg}`;
                   </div>
                 )}
 
-                {/* PASO 2: TIPO DE NICHO */}
+                {/* PASO 2: TIPO DE NICHO / MODELO DE NEGOCIO */}
                 {currentStep === 2 && (
                   <div class="space-y-5">
                     <h2 class="text-2xl font-bold text-white">¿Cuál es tu modelo / nicho?</h2>
@@ -371,7 +382,8 @@ Pregunta: ${userMsg}`;
                         { id: 'ropa', label: '👕 Marca de Ropa / Moda', desc: 'Tech packs, muestras, drops' },
                         { id: 'app', label: '📱 Aplicación / SaaS', desc: 'Wireframes, MVP, beta testers' },
                         { id: 'servicios', label: '🤝 Servicios / Agencia', desc: 'High ticket, llamadas de venta' },
-                        { id: 'ecommerce', label: '🛍️ E-commerce General', desc: 'Catálogo, ROAS, conversión' }
+                        { id: 'ecommerce', label: '🛍️ E-commerce General', desc: 'Catálogo, ROAS, conversión' },
+                        { id: 'otro', label: '✨ Otro (Personalizado)', desc: 'Escribe tu modelo exacto' }
                       ].map(item => (
                         <button
                           key={item.id}
@@ -387,6 +399,20 @@ Pregunta: ${userMsg}`;
                         </button>
                       ))}
                     </div>
+
+                    {/* Campo adicional si selecciona "Otro" */}
+                    {formData.niche === 'otro' && (
+                      <div class="pt-2">
+                        <label class="block text-xs font-semibold text-emerald-400 mb-1.5 uppercase tracking-wider">Escribe tu modelo de negocio exacto:</label>
+                        <input
+                          type="text"
+                          placeholder="Ej: Taller artesanal de joyas, Membresía de fitness, etc."
+                          value={formData.customNiche}
+                          onChange={(e) => setFormData({ ...formData, customNiche: e.target.value })}
+                          class="w-full bg-slate-900 border border-emerald-500/50 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -398,9 +424,9 @@ Pregunta: ${userMsg}`;
 
                     <div class="grid grid-cols-1 gap-3 pt-2">
                       {[
-                        { id: '2h', title: '⏱️ 1 a 2 Horas / día', desc: 'Enfoque enfocado y pasos hiper-atómicos.' },
+                        { id: '2h', title: '⏱️ 1 a 2 Horas / día', desc: 'Tareas atómicas ultra-específicas (Estrategia distribuida en más días reales).' },
                         { id: '4h', title: '⚡ 3 a 4 Horas / día', desc: 'Ritmo acelerado de ejecución diaria.' },
-                        { id: '8h', title: '🔥 Tiempo Completo (5-8h / día)', desc: 'Máxima intensidad para resultados inmediatos.' }
+                        { id: '8h', title: '🔥 Tiempo Completo (5-8h / día)', desc: 'Máxima intensidad y avance condensado.' }
                       ].map(item => (
                         <button
                           key={item.id}
@@ -443,7 +469,7 @@ Pregunta: ${userMsg}`;
                         </label>
                         <input
                           type="text"
-                          placeholder={formData.stage === 'escalar' ? 'Ej. Pasar de 5.000€ a 15.000€/mes' : 'Ej. Lanzar primera colección de 50 prendas'}
+                          placeholder={formData.stage === 'escalar' ? 'Ej. Pasar de 5.000€ a 10.000€/mes' : 'Ej. Facturar 10.000€/mes o lanzar colección'}
                           value={formData.goalTarget}
                           onChange={(e) => setFormData({ ...formData, goalTarget: e.target.value })}
                           class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
@@ -478,43 +504,119 @@ Pregunta: ${userMsg}`;
           {/* FLUJO 2: DASHBOARD CON CALENDARIO Y COPILOTO */}
           {onboardingComplete && activeTab === 'roadmap' && (
             <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Menú Izquierdo: Lista de Días */}
+              {/* Menú Izquierdo: Lista o Grid de Días con Candados */}
               <div class="lg:col-span-4 space-y-3">
-                <div class="glass-card p-4 rounded-2xl mb-4">
-                  <div class="text-xs text-emerald-400 font-semibold uppercase tracking-wider mb-1">Estrategia Activa</div>
-                  <div class="text-lg font-bold text-white">{formData.brandName || 'Horizon Project'}</div>
-                  <div class="text-xs text-slate-400 mt-1 flex items-center space-x-2">
-                    <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300 uppercase">{formData.niche}</span>
-                    <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300">{formData.timeCommitment}/día</span>
+                <div class="glass-card p-4 rounded-2xl mb-4 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs text-emerald-400 font-semibold uppercase tracking-wider mb-1">Estrategia Activa</div>
+                    <div class="text-lg font-bold text-white">{formData.brandName || 'Horizon Project'}</div>
+                    <div class="text-xs text-slate-400 mt-1 flex items-center space-x-2">
+                      <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300 uppercase">
+                        {formData.niche === 'otro' ? formData.customNiche : formData.niche}
+                      </span>
+                      <span class="bg-slate-800 px-2 py-0.5 rounded text-slate-300">{formData.timeCommitment}/día</span>
+                    </div>
+                  </div>
+
+                  {/* Selector Vista Lista vs Vista Calendario Grid */}
+                  <div class="flex items-center space-x-1 bg-slate-900 border border-slate-800 p-1 rounded-lg">
+                    <button
+                      onClick={() => setViewMode('list')}
+                      class={`px-2 py-1 rounded text-xs font-medium transition ${viewMode === 'list' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+                      title="Vista Lista"
+                    >
+                      Lista
+                    </button>
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      class={`px-2 py-1 rounded text-xs font-medium transition ${viewMode === 'grid' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+                      title="Vista Calendario"
+                    >
+                      Grid
+                    </button>
                   </div>
                 </div>
 
-                <div class="space-y-2">
-                  {planDays.map((dayData, idx) => (
-                    <button
-                      key={dayData.day}
-                      onClick={() => {
-                        setCurrentDayIndex(idx);
-                        setAiResponse('');
-                        setAiQuery('');
-                      }}
-                      class={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between ${
-                        currentDayIndex === idx
-                          ? 'bg-emerald-500/10 border-emerald-500 text-white'
-                          : 'bg-slate-900/40 border-slate-800/80 text-slate-400 hover:border-slate-700'
-                      }`}
-                    >
-                      <div>
-                        <div class="text-xs text-emerald-400 font-bold uppercase mb-0.5">Día {dayData.day}</div>
-                        <div class="font-medium text-sm text-slate-200">{dayData.title}</div>
-                      </div>
-                      <div class="text-xs text-slate-500">{dayData.tasks.length} tareas</div>
-                    </button>
-                  ))}
-                </div>
+                {/* VISTA LISTA VERTICAL CON CANDADOS Y DIFUMINADO */}
+                {viewMode === 'list' && (
+                  <div class="space-y-2 max-h-[520px] overflow-y-auto pr-1">
+                    {planDays.map((dayData, idx) => {
+                      const isLocked = idx > unlockedDayIndex;
+                      const isCurrent = idx === currentDayIndex;
+
+                      return (
+                        <button
+                          key={dayData.day}
+                          disabled={isLocked}
+                          onClick={() => {
+                            if (!isLocked) {
+                              setCurrentDayIndex(idx);
+                              setAiResponse('');
+                              setAiQuery('');
+                            }
+                          }}
+                          class={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between relative overflow-hidden ${
+                            isCurrent
+                              ? 'bg-emerald-500/10 border-emerald-500 text-white'
+                              : isLocked
+                              ? 'bg-slate-900/20 border-slate-800/40 text-slate-600 opacity-50 blur-[0.6px] cursor-not-allowed'
+                              : 'bg-slate-900/40 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                          }`}
+                        >
+                          <div>
+                            <div class="text-xs text-emerald-400 font-bold uppercase mb-0.5 flex items-center space-x-1">
+                              <span>Día {dayData.day}</span>
+                              {isLocked && <span>🔒</span>}
+                            </div>
+                            <div class="font-medium text-sm text-slate-200">{dayData.title}</div>
+                          </div>
+                          <div class="text-xs text-slate-500">{dayData.tasks.length} tareas</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* VISTA GRID CALENDARIO */}
+                {viewMode === 'grid' && (
+                  <div class="grid grid-cols-3 gap-2 max-h-[520px] overflow-y-auto pr-1">
+                    {planDays.map((dayData, idx) => {
+                      const isLocked = idx > unlockedDayIndex;
+                      const isCurrent = idx === currentDayIndex;
+
+                      return (
+                        <button
+                          key={dayData.day}
+                          disabled={isLocked}
+                          onClick={() => {
+                            if (!isLocked) {
+                              setCurrentDayIndex(idx);
+                              setAiResponse('');
+                              setAiQuery('');
+                            }
+                          }}
+                          class={`p-3 rounded-xl border text-center transition flex flex-col items-center justify-center space-y-1 ${
+                            isCurrent
+                              ? 'bg-emerald-500/20 border-emerald-500 text-white font-bold'
+                              : isLocked
+                              ? 'bg-slate-900/20 border-slate-800/30 text-slate-600 opacity-40 blur-[0.5px] cursor-not-allowed'
+                              : 'bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700'
+                          }`}
+                        >
+                          <span class="text-xs font-bold text-emerald-400 uppercase">Día {dayData.day}</span>
+                          {isLocked ? (
+                            <span class="text-lg">🔒</span>
+                          ) : (
+                            <span class="text-xs line-clamp-1 text-slate-400">{dayData.title}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Panel Central: Tareas del Día y Asesor Táctico */}
+              {/* Panel Central: Tareas del Día Activo */}
               <div class="lg:col-span-8">
                 {planDays[currentDayIndex] && (
                   <div class="glass-card p-6 rounded-2xl space-y-6">
@@ -527,34 +629,54 @@ Pregunta: ${userMsg}`;
                           {planDays[currentDayIndex].title}
                         </h2>
                       </div>
-                      
+
+                      {/* Botón de Completar Día y Avanzar */}
                       {currentDayIndex < planDays.length - 1 && (
                         <button
-                          onClick={() => {
-                            setCurrentDayIndex(currentDayIndex + 1);
-                            setAiResponse('');
-                            setAiQuery('');
-                          }}
-                          class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition"
+                          onClick={handleCompleteDayAndAdvance}
+                          disabled={!isDayTasksComplete(currentDayIndex)}
+                          class={`px-4 py-2.5 rounded-xl text-xs font-bold transition ${
+                            isDayTasksComplete(currentDayIndex)
+                              ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20'
+                              : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+                          }`}
                         >
-                          Completar día y avanzar →
+                          {isDayTasksComplete(currentDayIndex) ? 'Completar día y avanzar →' : '🔒 Completa las tareas para avanzar'}
                         </button>
                       )}
                     </div>
 
-                    {/* Lista de Tareas */}
+                    {/* Lista de Tareas con Checkbox de Estado */}
                     <div class="space-y-4">
-                      {planDays[currentDayIndex].tasks.map((task, i) => (
-                        <div key={i} class="bg-slate-900/70 border border-slate-800 p-4 rounded-xl space-y-2">
-                          <div class="flex items-start space-x-3">
-                            <input type="checkbox" class="mt-1 accent-emerald-500 w-4 h-4 rounded cursor-pointer" />
-                            <div>
-                              <h3 class="font-bold text-slate-200 text-base">{task.step}</h3>
-                              <p class="text-xs text-slate-400 mt-1">{task.desc}</p>
+                      {planDays[currentDayIndex].tasks.map((taskDesc, taskIdx) => {
+                        const isChecked = !!completedTasks[`${currentDayIndex}-${taskIdx}`];
+
+                        return (
+                          <div 
+                            key={taskIdx} 
+                            onClick={() => handleTaskToggle(currentDayIndex, taskIdx)}
+                            class={`border p-4 rounded-xl space-y-2 cursor-pointer transition ${
+                              isChecked
+                                ? 'bg-emerald-950/20 border-emerald-500/50'
+                                : 'bg-slate-900/70 border-slate-800 hover:border-slate-700'
+                            }`}
+                          >
+                            <div class="flex items-start space-x-3">
+                              <input 
+                                type="checkbox" 
+                                checked={isChecked}
+                                onChange={() => {}} 
+                                class="mt-1 accent-emerald-500 w-4 h-4 rounded cursor-pointer" 
+                              />
+                              <div>
+                                <h3 class={`font-bold text-sm ${isChecked ? 'text-emerald-400 line-through' : 'text-slate-200'}`}>
+                                  {taskDesc}
+                                </h3>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     {/* Asesor Copiloto Integrado para esta tarea */}
