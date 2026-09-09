@@ -9,211 +9,287 @@
       --bg: #09090b;
       --card: #141417;
       --border: #27272a;
-      --accent: #6366f1;
-      --accent-hover: #4f46e5;
+      --accent: #10b981; /* Verde Horizon */
+      --accent-glow: rgba(16, 185, 129, 0.2);
       --text: #f4f4f5;
       --muted: #a1a1aa;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* Navigation Sidebar */
-    nav { width: 240px; border-right: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 1.5rem; background: #0c0c0e; }
-    nav h1 { font-size: 1.1rem; tracking: 0.1em; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; }
-    .nav-btn { background: transparent; border: none; color: var(--muted); padding: 0.75rem 1rem; border-radius: 8px; text-align: left; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-    .nav-btn:hover, .nav-btn.active { background: var(--card); color: var(--text); }
+    /* Top Progress Bar Header */
+    header { background: #0c0c0e; border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; position: sticky; top: 0; z-index: 100; }
+    .header-content { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-weight: 800; letter-spacing: 2px; color: var(--accent); font-size: 1.1rem; }
+    .progress-track { background: var(--border); height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-top: 4px; }
+    .progress-fill { background: var(--accent); height: 100%; width: 25%; transition: width 0.3s ease; box-shadow: 0 0 10px var(--accent-glow); }
 
     /* Main Container */
-    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .page { display: none; padding: 2rem; overflow-y: auto; height: 100%; }
-    .page.active { display: flex; flex-direction: column; gap: 1.5rem; }
+    main { flex: 1; max-width: 900px; width: 100%; margin: 0 auto; padding: 1.5rem; padding-bottom: 5rem; }
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.2s ease-in; }
 
-    /* Onboarding / Form Style */
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
-    .form-group { margin-bottom: 1rem; }
-    label { display: block; font-size: 0.875rem; color: var(--muted); margin-bottom: 0.5rem; }
-    input[type="text"], select, textarea { width: 100%; padding: 0.75rem; background: #18181b; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.95rem; outline: none; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-    
-    .btn-primary { background: var(--accent); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .btn-primary:hover { background: var(--accent-hover); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Roadmap & Calendar */
-    .task-item { display: flex; items-center; justify-content: space-between; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.5rem; background: #18181b; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
-    .cal-day { background: var(--card); border: 1px solid var(--border); padding: 0.75rem; min-height: 80px; border-radius: 8px; font-size: 0.85rem; color: var(--muted); }
+    /* Cards & UI Elements */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; }
+    .btn { background: var(--accent); color: #000; font-weight: 700; border: none; padding: 0.85rem 1.5rem; border-radius: 10px; cursor: pointer; width: 100%; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.9; }
+    .btn-secondary { background: #27272a; color: var(--text); }
 
-    /* Chat Copilot */
-    #chat-container { flex: 1; overflow-y: auto; padding-right: 0.5rem; display: flex; flex-direction: column; gap: 1rem; }
-    .message { padding: 1rem; border-radius: 10px; max-width: 80%; line-height: 1.4; font-size: 0.95rem; }
-    .user { background: var(--accent); color: white; align-self: flex-end; }
-    .assistant { background: var(--card); border: 1px solid var(--border); align-self: flex-start; }
-    .chat-input-wrapper { display: flex; gap: 0.75rem; margin-top: 1rem; }
+    /* Onboarding Wizard */
+    .step-card { text-align: center; max-width: 500px; margin: 2rem auto; }
+    .option-grid { display: flex; flex-direction: column; gap: 0.75rem; margin: 1.5rem 0; text-align: left; }
+    .option-btn { background: #18181b; border: 1px solid var(--border); padding: 1rem; border-radius: 10px; color: var(--text); cursor: pointer; transition: border-color 0.2s; }
+    .option-btn:hover { border-color: var(--accent); }
+
+    /* Task Cards with Deep Execution & Inline AI */
+    .task-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .task-body { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.95rem; color: var(--muted); line-height: 1.6; }
+    .task-body.open { display: block; }
+    .inline-ai { background: #0f0f12; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+
+    /* Bottom Navigation Bar */
+    nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(12, 12, 14, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.75rem 0; z-index: 100; }
+    .nav-item { background: none; border: none; color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+    .nav-item.active { color: var(--accent); font-weight: 600; }
+
+    /* Global Chat Assistant Screen */
+    #chat-box { height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; padding-right: 0.5rem; }
+    .msg { padding: 0.85rem 1rem; border-radius: 10px; max-width: 85%; font-size: 0.9rem; line-height: 1.4; }
+    .msg.user { background: var(--accent); color: #000; align-self: flex-end; font-weight: 500; }
+    .msg.ai { background: #18181b; border: 1px solid var(--border); color: var(--text); align-self: flex-start; }
+    .chat-input { display: flex; gap: 0.5rem; }
+    input[type="text"] { flex: 1; padding: 0.85rem; background: #18181b; border: 1px solid var(--border); border-radius: 8px; color: var(--text); outline: none; }
   </style>
 </head>
 <body>
 
-  <!-- Menu Navigation -->
-  <nav>
-    <h1>Horizon OS</h1>
-    <button class="nav-btn active" onclick="switchTab('onboarding')">1. Onboarding</button>
-    <button class="nav-btn" onclick="switchTab('roadmap')">2. Plan & Pasos</button>
-    <button class="nav-btn" onclick="switchTab('calendar')">3. Calendario</button>
-    <button class="nav-btn" onclick="switchTab('copilot')">4. Copiloto IA</button>
-  </nav>
+  <!-- Barra Superior Permanente de Progreso -->
+  <header>
+    <div class="header-content">
+      <div class="header-top">
+        <span class="logo">HORIZON OS</span>
+        <span id="stage-badge" style="font-size: 0.85rem; color: var(--accent);">Día 1 de 30</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-bar"></div>
+      </div>
+    </div>
+  </header>
 
-  <!-- Main View Area -->
+  <!-- Contenido Principal -->
   <main>
-    <!-- View 1: Onboarding Questionary -->
-    <section id="onboarding" class="page active">
-      <h2>Cuestionario de Diagnóstico Inicial</h2>
-      <div class="card">
-        <form id="onboarding-form" onsubmit="saveOnboarding(event)">
-          <div class="form-group">
-            <label>¿Cuál es el objetivo principal de tu negocio/proyecto?</label>
-            <input type="text" id="goal" placeholder="Ej. Lanzar nueva colección / Escalar ventas" required />
-          </div>
-          <div class="form-group">
-            <label>¿Cuál es tu principal cuello de botella actual?</label>
-            <select id="bottleneck">
-              <option value="marketing">Captación / Marketing</option>
-              <option value="sales">Conversión / Ventas</option>
-              <option value="product">Desarrollo de producto</option>
-              <option value="operations">Operaciones / Tiempo</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Horas de dedicación diaria esperadas</label>
-            <input type="text" id="hours" placeholder="Ej. 4 horas diarias" required />
-          </div>
-          <button type="submit" class="btn-primary">Guardar y Generar Plan</button>
-        </form>
+
+    <!-- PANTALLA 1: Onboarding Wizard (Preguntas por Pantallas) -->
+    <section id="sec-onboarding" class="screen active">
+      <div class="step-card card" id="wiz-step-1">
+        <h2>¿En qué etapa te encuentras?</h2>
+        <p style="color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem;">Ajustaremos las tareas diarias según tu punto de partida.</p>
+        <div class="option-grid">
+          <button class="option-btn" onclick="nextWizardStep(2, 'idea')">🚀 <strong>Tengo una idea / Desde 0</strong><br><small>Quiero estructurar el proyecto y validar la propuesta.</small></button>
+          <button class="option-btn" onclick="nextWizardStep(2, 'desarrollo')">🛠️ <strong>Proyecto ya creado</strong><br><small>Tengo la marca/idea pero necesito lanzarlo al mercado.</small></button>
+          <button class="option-btn" onclick="nextWizardStep(2, 'escalar')">📈 <strong>Ya facturando</strong><br><small>Busco optimizar conversión y escalar ventas.</small></button>
+        </div>
+      </div>
+
+      <div class="step-card card" id="wiz-step-2" style="display:none;">
+        <h2>¿Cuál es tu foco principal este mes?</h2>
+        <div class="option-grid">
+          <button class="option-btn" onclick="finishWizard('Validación & Producto')">🎯 Crear la oferta y validar clientes</button>
+          <button class="option-btn" onclick="finishWizard('Marketing & Embudo')">📣 Lanzar embudo de captación de tráfico</button>
+          <button class="option-btn" onclick="finishWizard('Ventas & Cierre')">💰 Optimizar proceso de ventas directas</button>
+        </div>
       </div>
     </section>
 
-    <!-- View 2: Plan & Daily Steps -->
-    <section id="roadmap" class="page">
-      <h2>Plan de Acción & Tareas Diarias</h2>
-      <div class="card">
-        <h3>Paso a Paso de Hoy</h3>
-        <div id="tasks-list" style="margin-top: 1rem;">
-          <div class="task-item">
-            <span>1. Definir propuesta de valor y oferta principal</span>
-            <input type="checkbox" onchange="toggleTask(this)" />
+    <!-- PANTALLA 2: Pasos Diarios Detallados -->
+    <section id="sec-today" class="screen">
+      <h2 style="margin-bottom: 0.5rem;">Plan de Hoy - Ejecución Táctica</h2>
+      <p style="color: var(--muted); margin-bottom: 1.5rem;">Haz clic en cada paso para ver la guía exacta de implementación.</p>
+
+      <div id="tasks-container">
+        <!-- Tarea 1 -->
+        <div class="task-card">
+          <div class="task-header" onclick="toggleTaskBody('tb1')">
+            <div>
+              <span style="color: var(--accent); font-weight: bold; margin-right: 8px;">Paso 1</span>
+              <strong>Configurar Embudo de Captación y Mensajes Directos</strong>
+            </div>
+            <span>▼</span>
           </div>
-          <div class="task-item">
-            <span>2. Configurar embudo de captación / mensajes</span>
-            <input type="checkbox" onchange="toggleTask(this)" />
+          <div class="task-body" id="tb1">
+            <p><strong>Cómo ejecutarlo exactamente:</strong></p>
+            <ol style="margin-left: 1.2rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+              <li>Define tu oferta de entrada en un mensaje de no más de 3 frases.</li>
+              <li>Prepara las plantillas de contacto directo alineadas con el gancho principal.</li>
+              <li>Configura la respuesta automática en tus redes o canal de conversión.</li>
+            </ol>
+            <!-- Asesor IA Integrado -->
+            <div class="inline-ai">
+              <strong style="color: var(--accent); font-size: 0.85rem;">🤖 Asesor Copiloto para esta tarea:</strong>
+              <div class="chat-input" style="margin-top: 0.5rem;">
+                <input type="text" id="ai-input-1" placeholder="Ej: Redáctame 3 mensajes para enviar a prospectos..." />
+                <button class="btn" style="width: auto;" onclick="askInlineAI('ai-input-1', 'ai-res-1')">Consultar</button>
+              </div>
+              <div id="ai-res-1" style="margin-top: 0.75rem; font-size: 0.85rem; color: #e4e4e7;"></div>
+            </div>
           </div>
-          <div class="task-item">
-            <span>3. Lanzar campaña de comunicación inicial</span>
-            <input type="checkbox" onchange="toggleTask(this)" />
+        </div>
+
+        <!-- Tarea 2 -->
+        <div class="task-card">
+          <div class="task-header" onclick="toggleTaskBody('tb2')">
+            <div>
+              <span style="color: var(--accent); font-weight: bold; margin-right: 8px;">Paso 2</span>
+              <strong>Lanzar Campaña de Comunicación Inicial</strong>
+            </div>
+            <span>▼</span>
+          </div>
+          <div class="task-body" id="tb2">
+            <p><strong>Cómo ejecutarlo exactamente:</strong></p>
+            <ul style="margin-left: 1.2rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+              <li>Publica el primer contenido enfocado al problema que resuelve tu producto.</li>
+              <li>Realiza 10 contactos directos con el embudo configurado en el Paso 1.</li>
+            </ul>
+            <div class="inline-ai">
+              <strong style="color: var(--accent); font-size: 0.85rem;">🤖 Asesor Copiloto para esta tarea:</strong>
+              <div class="chat-input" style="margin-top: 0.5rem;">
+                <input type="text" id="ai-input-2" placeholder="Ej: Dá un guión para el primer contenido de la campaña..." />
+                <button class="btn" style="width: auto;" onclick="askInlineAI('ai-input-2', 'ai-res-2')">Consultar</button>
+              </div>
+              <div id="ai-res-2" style="margin-top: 0.75rem; font-size: 0.85rem; color: #e4e4e7;"></div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- View 3: Calendar -->
-    <section id="calendar" class="page">
-      <h2>Calendario de Ejecución (30 Días)</h2>
-      <div class="card">
-        <div class="calendar-grid" id="calendar-grid">
-          <!-- Days JS render placeholder -->
+    <!-- PANTALLA 3: Calendario Global -->
+    <section id="sec-calendar" class="screen">
+      <h2>Calendario del Plan (30 Días)</h2>
+      <div class="card" style="margin-top: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; text-align: center;" id="cal-grid"></div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 4: Copiloto IA General -->
+    <section id="sec-copilot" class="screen">
+      <h2>Copiloto Estratégico General</h2>
+      <div class="card" style="margin-top: 1rem;">
+        <div id="chat-box">
+          <div class="msg ai">Hola, Gonzalo. Estoy listo para asistirte en cualquier decisión táctica de Horizon OS.</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="global-chat-input" placeholder="Escribe tu consulta estratégica..." />
+          <button class="btn" style="width: auto;" onclick="sendGlobalChat()">Enviar</button>
         </div>
       </div>
     </section>
 
-    <!-- View 4: AI Copilot Chat -->
-    <section id="copilot" class="page">
-      <h2>Copiloto Estratégico Horizon OS</h2>
-      <div id="chat-container">
-        <div class="message assistant">Hola, Gonzalo. Soy tu copiloto en Horizon OS. ¿En qué paso del plan nos enfocamos hoy?</div>
-      </div>
-      <form id="chat-form" class="chat-input-wrapper">
-        <input type="text" id="chat-input" placeholder="Consulta táctica a la IA..." required />
-        <button type="submit" class="btn-primary">Enviar</button>
-      </form>
-    </section>
   </main>
 
+  <!-- Navegación Inferior Estilo App Real -->
+  <nav>
+    <button class="nav-item active" onclick="navTo('sec-onboarding', this)"><span>📋</span>Onboarding</button>
+    <button class="nav-item" onclick="navTo('sec-today', this)"><span>⚡</span>Pasos de Hoy</button>
+    <button class="nav-item" onclick="navTo('sec-calendar', this)"><span>📅</span>Calendario</button>
+    <button class="nav-item" onclick="navTo('sec-copilot', this)"><span>🤖</span>Copiloto IA</button>
+  </nav>
+
   <script>
-    // Tab Switch Logic
-    function switchTab(tabId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
+    // Navigation Control
+    function navTo(screenId, element) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      if (element) element.classList.add('active');
     }
 
-    // Render Calendar
-    const calGrid = document.getElementById('calendar-grid');
+    // Wizard Logic
+    function nextWizardStep(step, val) {
+      document.getElementById('wiz-step-1').style.display = 'none';
+      document.getElementById('wiz-step-2').style.display = 'block';
+      document.getElementById('progress-bar').style.width = '20%';
+    }
+
+    function finishWizard(goal) {
+      document.getElementById('progress-bar').style.width = '35%';
+      navTo('sec-today', document.querySelectorAll('.nav-item')[1]);
+    }
+
+    // Toggle Task Content
+    function toggleTaskBody(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('open');
+    }
+
+    // Calendar Generation
+    const calGrid = document.getElementById('cal-grid');
     for (let i = 1; i <= 28; i++) {
       const day = document.createElement('div');
-      day.className = 'cal-day';
-      day.innerHTML = `<strong>Día ${i}</strong><br>${i % 2 === 0 ? 'Ejecución' : 'Revisión'}`;
+      day.style.cssText = 'background: #18181b; border: 1px solid #27272a; padding: 0.5rem; border-radius: 6px; font-size: 0.75rem;';
+      day.innerHTML = `<strong>D${i}</strong>`;
+      if(i === 1) day.style.borderColor = '#10b981';
       calGrid.appendChild(day);
     }
 
-    // Onboarding Form Handler
-    function saveOnboarding(e) {
-      e.preventDefault();
-      const goal = document.getElementById('goal').value;
-      localStorage.setItem('horizon_goal', goal);
-      alert('Configuración guardada correctamente.');
-      switchTab('roadmap');
-    }
-
-    // Checkbox State Handler
-    function toggleTask(el) {
-      el.parentElement.style.opacity = el.checked ? '0.5' : '1';
-    }
-
-    // Chat Integration with Vercel API Endpoint (/api/chat)
-    const chatForm = document.getElementById('chat-form');
-    const chatInput = document.getElementById('chat-input');
-    const chatContainer = document.getElementById('chat-container');
-
-    function appendMessage(text, role) {
-      const msg = document.createElement('div');
-      msg.classList.add('message', role);
-      msg.textContent = text;
-      chatContainer.appendChild(msg);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-      return msg;
-    }
-
-    chatForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const prompt = chatInput.value.trim();
-      if (!prompt) return;
-
-      appendMessage(prompt, 'user');
-      chatInput.value = '';
-
-      const loadingMsg = appendMessage('Consultando a la IA...', 'assistant');
-
+    // API Call Function (Vercel Integration)
+    async function callGemini(promptText) {
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
+          body: JSON.stringify({ prompt: promptText })
         });
-
         const data = await response.json();
-
-        if (data.text) {
-          loadingMsg.textContent = data.text;
-        } else if (data.error) {
-          loadingMsg.textContent = 'Error API: ' + data.error;
-        } else {
-          loadingMsg.textContent = 'Respuesta vacía del servidor.';
-        }
+        if (data.text) return data.text;
+        if (data.error) return 'Error API: ' + data.error;
+        return 'Sin respuesta del servidor.';
       } catch (err) {
-        loadingMsg.textContent = 'Error de conexión con Horizon OS.';
-        console.error(err);
+        return 'Error de conexión con la función /api/chat.';
       }
-    });
+    }
+
+    // Task-specific Inline AI Assistance
+    async function askInlineAI(inputId, resultId) {
+      const input = document.getElementById(inputId);
+      const resDiv = document.getElementById(resultId);
+      if (!input.value.trim()) return;
+
+      resDiv.textContent = 'Analizando con el Copiloto...';
+      const reply = await callGemini(input.value);
+      resDiv.textContent = reply;
+    }
+
+    // Global Chat Assistance
+    async function sendGlobalChat() {
+      const input = document.getElementById('global-chat-input');
+      const box = document.getElementById('chat-box');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      // Append User Msg
+      const uMsg = document.createElement('div');
+      uMsg.className = 'msg user';
+      uMsg.textContent = prompt;
+      box.appendChild(uMsg);
+      input.value = '';
+
+      // Append Loading AI Msg
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'msg ai';
+      aiMsg.textContent = 'Pensando...';
+      box.appendChild(aiMsg);
+      box.scrollTop = box.scrollHeight;
+
+      const reply = await callGemini(prompt);
+      aiMsg.textContent = reply;
+      box.scrollTop = box.scrollHeight;
+    }
   </script>
 </body>
 </html>
