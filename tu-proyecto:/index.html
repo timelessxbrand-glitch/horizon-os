@@ -1,0 +1,37 @@
+// Función para llamar al copiloto de IA sin pedir la clave
+async function consultarCopiloto(promptUsuario) {
+  try {
+    // Llamada automática a la función que acabamos de crear en Vercel
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: promptUsuario,
+        systemInstruction: "Eres el copiloto de estrategia y gestión de Horizon OS. Da respuestas directas, breves, accionables y estructuradas."
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      alert("Error del copiloto: " + data.error);
+      return null;
+    }
+
+    // 'data.text' contiene la respuesta formateada de la IA
+    return data.text;
+
+  } catch (err) {
+    console.error("Error al conectar con el servidor:", err);
+    alert("Ocurrió un error al conectar con el copiloto.");
+    return null;
+  }
+}
+
+// Ejemplo de cómo usarlo cuando el usuario pulsa un botón:
+/*
+  const respuestaIA = await consultarCopiloto("¿Cómo puedo optimizar la propuesta de valor para este cliente?");
+  console.log(respuestaIA);
+*/
